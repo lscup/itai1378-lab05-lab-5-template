@@ -1,0 +1,123 @@
+name: Autograding Tests
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  checks: write
+  actions: read
+  contents: read
+
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    timeout-minutes: 5
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install jupyter nbconvert pytest
+
+    - name: syntaxcheck
+      id: syntaxcheck
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: "Syntax Check"
+        setup-command: python -c "import cv2; import numpy as np; import matplotlib.pyplot as plt; import ipywidgets as widgets; from IPython.display import display; import os" && pip install google ipython numpy matplotlib ipywidgets opencv-python
+        command: jupyter nbconvert --to notebook --execute notebook.ipynb --stdout
+        timeout: 30
+        max-score: 20
+
+    - name: browseimagefunctionality
+      id: browseimagefunctionality
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: "Browse Image Functionality"
+        setup-command: python -c "import cv2; import numpy as np; test_img = np.ones((100, 100, 3), dtype=np.uint8) * 255; cv2.imwrite('test_image.png', test_img)" && pip install google ipython numpy matplotlib ipywidgets opencv-python
+        command: printf 'test_image.png' | jupyter nbconvert --to notebook --execute notebook.ipynb --stdout
+        timeout: 30
+        max-score: 10
+
+    - name: converttograyscale
+      id: converttograyscale
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: "Convert to Grayscale"
+        setup-command: python -c "import cv2; import numpy as np; test_img = np.ones((100, 100, 3), dtype=np.uint8) * 255; cv2.imwrite('test_image.png', test_img)" && pip install google ipython numpy matplotlib ipywidgets opencv-python
+        command: printf 'test_image.png' | jupyter nbconvert --to notebook --execute notebook.ipynb --stdout
+        timeout: 30
+        max-score: 10
+
+    - name: adjustbrightness
+      id: adjustbrightness
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: "Adjust Brightness"
+        setup-command: python -c "import cv2; import numpy as np; test_img = np.ones((100, 100, 3), dtype=np.uint8) * 255; cv2.imwrite('test_image.png', test_img)" && pip install google ipython numpy matplotlib ipywidgets opencv-python
+        command: printf 'test_image.png' | jupyter nbconvert --to notebook --execute notebook.ipynb --stdout
+        timeout: 30
+        max-score: 15
+
+    - name: resizeimage
+      id: resizeimage
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: "Resize Image"
+        setup-command: python -c "import cv2; import numpy as np; test_img = np.ones((100, 100, 3), dtype=np.uint8) * 255; cv2.imwrite('test_image.png', test_img)" && pip install google ipython numpy matplotlib ipywidgets opencv-python
+        command: printf 'test_image.png' | jupyter nbconvert --to notebook --execute notebook.ipynb --stdout
+        timeout: 30
+        max-score: 15
+
+    - name: rotateimage
+      id: rotateimage
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: "Rotate Image"
+        setup-command: python -c "import cv2; import numpy as np; test_img = np.ones((100, 100, 3), dtype=np.uint8) * 255; cv2.imwrite('test_image.png', test_img)" && pip install google ipython numpy matplotlib ipywidgets opencv-python
+        command: printf 'test_image.png' | jupyter nbconvert --to notebook --execute notebook.ipynb --stdout
+        timeout: 30
+        max-score: 10
+
+    - name: plothistogram
+      id: plothistogram
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: "Plot Histogram"
+        setup-command: python -c "import cv2; import numpy as np; test_img = np.ones((100, 100, 3), dtype=np.uint8) * 255; cv2.imwrite('test_image.png', test_img)" && pip install google ipython numpy matplotlib ipywidgets opencv-python
+        command: printf 'test_image.png' | jupyter nbconvert --to notebook --execute notebook.ipynb --stdout
+        timeout: 30
+        max-score: 10
+
+    - name: saveimage
+      id: saveimage
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: "Save Image"
+        setup-command: python -c "import cv2; import numpy as np; test_img = np.ones((100, 100, 3), dtype=np.uint8) * 255; cv2.imwrite('test_image.png', test_img)" && pip install google ipython numpy matplotlib ipywidgets opencv-python
+        command: printf 'test_image.png' | jupyter nbconvert --to notebook --execute notebook.ipynb --stdout
+        timeout: 30
+        max-score: 10
+
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        SYNTAXCHECK_RESULTS: "${{steps.syntaxcheck.outputs.result}}"
+        BROWSEIMAGEFUNCTIONALITY_RESULTS: "${{steps.browseimagefunctionality.outputs.result}}"
+        CONVERTTOGRAYSCALE_RESULTS: "${{steps.converttograyscale.outputs.result}}"
+        ADJUSTBRIGHTNESS_RESULTS: "${{steps.adjustbrightness.outputs.result}}"
+        RESIZEIMAGE_RESULTS: "${{steps.resizeimage.outputs.result}}"
+        ROTATEIMAGE_RESULTS: "${{steps.rotateimage.outputs.result}}"
+        PLOTHISTOGRAM_RESULTS: "${{steps.plothistogram.outputs.result}}"
+        SAVEIMAGE_RESULTS: "${{steps.saveimage.outputs.result}}"
+      with:
+        runners: syntaxcheck,browseimagefunctionality,converttograyscale,adjustbrightness,resizeimage,rotateimage,plothistogram,saveimage
